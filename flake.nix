@@ -22,7 +22,7 @@
     ...
   }: let
     system = "x86_64-linux";
-    pname = "kotlin-android-app";
+    pname = "spotify-toolbox";
     version = "0.0.1";
     LANG = "C.UTF-8";
     LC_ALL = "C.UTF-8";
@@ -46,40 +46,38 @@
       pciutils
       xorg.setxkbmap
     ];
-    emulatorLibs = with pkgs;
-      [
-        alsa-lib
-        dbus
-        systemd
-        expat
-        libbsd
-        libpulseaudio
-        libuuid
-        libxkbcommon
-        xorg.libX11
-        xorg.libxcb
-        xorg.xcbutilwm
-        xorg.xcbutilrenderutil
-        xorg.xcbutilkeysyms
-        xorg.xcbutilimage
-        xorg.xcbutilcursor
-        xorg.libICE
-        xorg.libSM
-        xorg.libxkbfile
-        xorg.libXcomposite
-        xorg.libXcursor
-        xorg.libXdamage
-        xorg.libXfixes
-        libGL
-        libdrm
-        libpng
-        nspr
-        nss_latest
-        gtk2
-        glib
-        wayland
-      ]
-      ++ pkgs.android-studio.sdk.packages;
+    emulatorLibs = with pkgs; [
+      alsa-lib
+      dbus
+      systemd
+      expat
+      libbsd
+      libpulseaudio
+      libuuid
+      libxkbcommon
+      xorg.libX11
+      xorg.libxcb
+      xorg.xcbutilwm
+      xorg.xcbutilrenderutil
+      xorg.xcbutilkeysyms
+      xorg.xcbutilimage
+      xorg.xcbutilcursor
+      xorg.libICE
+      xorg.libSM
+      xorg.libxkbfile
+      xorg.libXcomposite
+      xorg.libXcursor
+      xorg.libXdamage
+      xorg.libXfixes
+      libGL
+      libdrm
+      libpng
+      nspr
+      nss_latest
+      gtk2
+      glib
+      wayland
+    ];
     pkgs = import nixpkgs {
       inherit system;
       config = {
@@ -110,7 +108,7 @@
               system-images-android-34-google-apis-x86-64
               system-images-android-34-default-x86-64
             ]));
-          kotlin-android-app = gradle2nix.builders.${system}.buildGradlePackage rec {
+          spotify-toolbox-android = gradle2nix.builders.${system}.buildGradlePackage rec {
             inherit
               pname
               version
@@ -141,7 +139,7 @@
               cp app/build/outputs/apk/debug/app-debug.apk $out/${pname}-${version}.apk
             '';
           };
-          kotlin-android-app-emulator = final.stdenv.mkDerivation {
+          spotify-toolbox-android-emulator = final.stdenv.mkDerivation {
             inherit version;
             pname = "${pname}-emulator";
             buildCommand = ''
@@ -172,7 +170,7 @@
               export AVD_ABI_VERSION="x86_64"
               export AVD_IMAGE="system-images;android-$AVD_PLATFORM_VERSION;$AVD_SYSTEM_IMAGE_TYPE;$AVD_ABI_VERSION"
               export AVD_PATH="$ANDROID_AVD_HOME/$AVD_NAME.avd"
-              export ANDROID_PACKAGE="com.example.kotlinandroidapp"
+              export ANDROID_PACKAGE="thm.mse.spotify-toolbox"
               export ANDROID_ACTIVITY=".MainActivity"
 
               echo "Looking for a free TCP port in range 5554-5584" >&2
@@ -230,7 +228,7 @@
 
               if [ "$(${final.android-studio.sdk}/bin/adb -s $ANDROID_SERIAL shell pm list packages | grep package:$ANDROID_PACKAGE)" = "" ]
               then
-                appPath="${pkgs.kotlin-android-app}/${pkgs.kotlin-android-app.name}.apk"
+                appPath="${pkgs.spotify-toolbox}/${pkgs.spotify-toolbox.name}.apk"
                 ${final.android-studio.sdk}/bin/adb -s $ANDROID_SERIAL install "$appPath"
               fi
 
@@ -256,11 +254,11 @@
         inherit
           (pkgs)
           android-studio
-          kotlin-android-app
-          kotlin-android-app-emulator
+          spotify-toolbox
+          spotify-toolbox-android-emulator
           lockgradle
           ;
-        default = pkgs.kotlin-android-app-emulator;
+        default = pkgs.spotify-toolbox-app-emulator;
       };
     };
     devShells = {
@@ -280,9 +278,6 @@
           buildInputs = with pkgs; [
             jdk
             gradle
-            kotlin
-            kotlin-language-server
-            ktlint
             lockgradle
             android-studio
             android-studio.sdk
@@ -310,7 +305,7 @@
             export AVD_ABI_VERSION="x86_64"
             export AVD_IMAGE="system-images;android-$AVD_PLATFORM_VERSION;$AVD_SYSTEM_IMAGE_TYPE;$AVD_ABI_VERSION"
             export AVD_PATH="$ANDROID_AVD_HOME/$AVD_NAME.avd"
-            export ANDROID_PACKAGE="com.example.kotlinandroidapp"
+            export ANDROID_PACKAGE="thm.mse.spotify-toolbox"
             export ANDROID_ACTIVITY=".MainActivity"
             export NIX_ANDROID_AVD_FLAGS=""
             export NIX_ANDROID_EMULATOR_FLAGS=""
